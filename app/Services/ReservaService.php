@@ -7,6 +7,7 @@ use App\Models\Reserva;
 use App\Models\Usuario;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ReservaService
@@ -42,10 +43,37 @@ class ReservaService
 
         foreach($reservasNuevas as $dia => $reservas) {
             foreach ($reservas as $reserva) {
+                $aula =  $reserva['aula'];
                 $reserva['dia'] = $dia;
                 $reserva['usuario_id'] = $usuarioId;
 
-                $reserva['aula_id'] = $reserva['aula']->getId();
+                $reserva['aula_id'] = $aula->getId();
+
+                $aulaId = $reserva['aula_id'];
+                $horaInicio = $reserva['horaInicio'];
+                $horaFin = $reserva['horaFin'];
+
+                $cantidadExistentes = DB::select("
+                    SELECT
+                        COUNT(*) AS total
+                    FROM reservas
+                    WHERE reservas.aula_id = :id
+                        AND reservas.dia = :dia
+                        AND reservas.horaInicio = :horaInicio
+                        AND reservas.horaFin = :horaFin
+                ", [
+                    'id' => $aulaId,
+                    'dia' => $dia,
+                    'horaInicio'=> $horaInicio,
+                    'horaFin' => $horaFin
+                ]);
+
+                $cantidadExistentes = $cantidadExistentes[0]->total;
+
+                if ($cantidadExistentes >= $aula->getCapacidadPersonas()) {
+                    return response()->json("No se puede guardar la reserva del día $dia a las $horaInicio hs ya que no hay capacidad disponible.", 400);
+                }
+
                 unset($reserva['aula']);
 
                 // Este guardado con SQL sería
