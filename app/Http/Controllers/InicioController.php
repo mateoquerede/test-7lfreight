@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Aula;
@@ -29,12 +31,24 @@ class InicioController extends Controller {
         return $servicio->getViewModel();
     }
 
+    /**
+     * En el $request recibe los inputs:
+     * [
+     *  'usuario' => 'id'
+     *  'aulas' => [
+     *      'id del aula' => [
+     *          'dia' => 'hora'
+     *      ]
+     *  ]
+     * ]
+     */
     public function agregarReservas(Request $request): JsonResponse
     {
         $usuarioId = $request->input('usuario');
         if (!isset($usuarioId)) {
             return response()->json('No se ha enviado un ID de usuario válida', 400);
         }
+        $usuarioId = (int) $usuarioId;
 
         $camposHora = $request->input();
 
@@ -58,6 +72,12 @@ class InicioController extends Controller {
         return $servicio->guardarReservas($reservas, $usuarioId);
     }
 
+    /**
+     * En el $request recibe el input en formato:
+     * [
+     *  'usuario' => 'id'
+     * ]
+     */
     public function consultarReservas(Request $request): Response|View
     {
         $usuarioId = $request->input('usuario');
@@ -83,7 +103,10 @@ class InicioController extends Controller {
         ]);
     }
 
-    public function cancelarReserva(int $id)
+    /**
+     * Se recibe el $id de la reserva desde la url
+     */
+    public function cancelarReserva(int $id): Response
     {
         $reserva = Reserva::find($id);
         if ($reserva === null) {
@@ -116,12 +139,12 @@ class InicioController extends Controller {
 
     //<editor-fold desc="Dependencias">
 
-    public function getInicioService(): InicioService
+    protected function getInicioService(): InicioService
     {
         return $this->inicioService;
     }
 
-    public function getReservaService(): ReservaService
+    protected function getReservaService(): ReservaService
     {
         return $this->reservaService;
     }

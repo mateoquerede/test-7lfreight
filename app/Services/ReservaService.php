@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Aula;
@@ -8,7 +10,6 @@ use App\Models\Usuario;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
 
 class ReservaService
 {
@@ -88,6 +89,11 @@ class ReservaService
     }
 
     //<editor-fold desc="Agregar reservas">
+
+    /**
+     * @param Collection<int, Reserva> $reservas
+     * @return array<string, array<int, array<string, int|Aula>>>
+     */
     private function mapearReservasParaComprobarSuperposicion(Collection $reservas): array
     {
         $mapeadas = [];
@@ -106,6 +112,9 @@ class ReservaService
         return $mapeadas;
     }
 
+    /**
+     * @param array<string, array<int, array<string, int|Aula>>> $arrayIntervalos
+     */
     private function comprobarHorariosSuperpuestos(array $arrayIntervalos): bool {
         // Se itera para comprobar si existe superposición en el día
         foreach($arrayIntervalos as $dia => $intervalos) {
@@ -119,6 +128,10 @@ class ReservaService
         return false;
     }
 
+    /**
+     * @param array<string, array<string, string>> $camposConValores
+     * @return array<string, array<int, array<string, int|Aula>>>
+     */
     private function mapearCamposHorarios(array $camposConValores): array
     {
         $arrayIntervalos = [];
@@ -142,7 +155,10 @@ class ReservaService
         return $arrayIntervalos;
     }
 
-    private function comprobarHorariosDelDia($intervalos): bool {
+    /**
+     * @param array<int, array<string, int|Aula>> $intervalos
+     */
+    private function comprobarHorariosDelDia(array $intervalos): bool {
         $cantidadIntervalos = count($intervalos);
 
         for ($i = 0; $i < $cantidadIntervalos; $i++) {
@@ -156,12 +172,19 @@ class ReservaService
         return false;
     }
 
-    private function comprobarHorarios($intervalo1, $intervalo2): bool {
+    /**
+     * @param array<string, int|Aula> $intervalo1
+     * @param array<string, int|Aula> $intervalo2
+     */
+    private function comprobarHorarios(array $intervalo1, array $intervalo2): bool {
         return $intervalo1['horaInicio'] < $intervalo2['horaFin'] && $intervalo1['horaFin'] > $intervalo2['horaInicio'];
     }
     //</editor-fold>
 
     //<editor-fold desc="Consultar reservas">
+    /**
+     * @return array<int, array<string, string|int>>
+     */
     public function getReservasMapeadas(Usuario $usuario): array
     {
         $reservas = $usuario->getReservas();

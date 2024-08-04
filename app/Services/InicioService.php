@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Aula;
@@ -24,6 +26,8 @@ class InicioService
             'usuarios' => $usuarios
         ]);
     }
+
+    //<editor-fold desc="getAulasArray">
     /**
      * @return array<int, array<string, int|string|array>>
      */
@@ -101,6 +105,7 @@ class InicioService
 
         return $horarios;
     }
+    //</editor-fold>
 
     /**
      * @return array<int, int|string>
@@ -114,7 +119,7 @@ class InicioService
             FROM usuarios
         ");
 
-        // Se pasan los usuarios a array
+        // Se mapean los usuarios obtenidos a array
         return array_map(function ($aula) {
             return (array)$aula;
         }, $usuarios);
